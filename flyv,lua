@@ -1,0 +1,55 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local flying = false
+local speed = 50
+
+local function toggleFly()
+flying = not flying
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+
+if flying then
+local bodyVelocity = Instance.new("BodyVelocity")
+bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+bodyVelocity.MaxForce = Vector3.new(1e4, 1e4, 1e4)
+bodyVelocity.Parent = humanoidRootPart
+
+RunService:BindToRenderStep("Fly", Enum.RenderPriority.Character.Value, function(deltaTime)
+local moveDirection = Vector3.new(0, 0, 0)
+
+if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+moveDirection = moveDirection + humanoidRootPart.CFrame.LookVector
+end
+if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+moveDirection = moveDirection - humanoidRootPart.CFrame.LookVector
+end
+if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+moveDirection = moveDirection - humanoidRootPart.CFrame.RightVector
+end
+if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+moveDirection = moveDirection + humanoidRootPart.CFrame.RightVector
+end
+if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+moveDirection = moveDirection + humanoidRootPart.CFrame.UpVector
+end
+if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+moveDirection = moveDirection - humanoidRootPart.CFrame.UpVector
+end
+
+bodyVelocity.Velocity = moveDirection * speed
+end)
+else
+RunService:UnbindFromRenderStep("Fly")
+humanoidRootPart:FindFirstChild("BodyVelocity"):Destroy()
+end
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+if gameProcessedEvent then return end
+if input.KeyCode == Enum.KeyCode.V then
+toggleFly()
+end
+end)
